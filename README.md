@@ -12,6 +12,8 @@ Requisitos: JDK 25 (LTS) y Maven 3.9+.
 mvn quarkus:dev
 ```
 
+Antes de iniciar, configure `AUTH_TOKEN_SECRET` con una clave aleatoria de alta entropía. Requirements API debe usar el mismo valor. No lo guarde en el repositorio.
+
 Servicio: `http://localhost:8080`
 
 Credenciales locales:
@@ -26,4 +28,4 @@ Credenciales locales:
 
 ## Propósito de la rama `main`
 
-La rama contiene deuda técnica y de seguridad deliberada: SQL concatenado, contraseñas en texto plano, token reversible, secreto hardcodeado, CORS permisivo, método largo, manejo genérico de excepciones y dependencias con CVEs.
+La rama contiene deuda técnica y de seguridad deliberada: SQL concatenado, contraseñas en texto plano, CORS permisivo, método largo, manejo genérico de excepciones y dependencias con CVEs. La emisión de tokens firmados y la configuración externa de su clave se corrigieron en HU-01.

@@ -1,17 +1,27 @@
 package com.bcp.workshop.auth;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
+
+import java.util.Date;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 class AuthResourceTest {
+    private static final String TEST_TOKEN_SECRET = "workshop-test-signing-key-do-not-use-outside-tests";
+
     @Test
     void logsInWithWorkshopUser() {
-        given()
+        String token = given()
                 .contentType("application/json")
                 .body("{\"username\":\"student\",\"password\":\"Workshop123!\",\"client\":\"angular-workshop\"}")
                 .when().post("/auth/login")
@@ -22,7 +32,16 @@ class AuthResourceTest {
                 .body("user.role", is("STUDENT"))
                 .body("expiresIn", is(3600))
                 .body("debug", is("authenticated-with-legacy-flow"))
-                .body("token", notNullValue());
+                .body("token", notNullValue())
+                .extract().path("token");
+
+        DecodedJWT decoded = JWT.require(Algorithm.HMAC256(TEST_TOKEN_SECRET)).build().verify(token);
+        assertEquals("workshop-auth-backend", decoded.getIssuer());
+        assertTrue(decoded.getAudience().contains("workshop-requirements-api"));
+        assertEquals("student", decoded.getSubject());
+        assertEquals("STUDENT", decoded.getClaim("role").asString());
+        assertNotNull(decoded.getExpiresAt());
+        assertTrue(decoded.getExpiresAt().after(new Date()));
     }
 
     @Test
