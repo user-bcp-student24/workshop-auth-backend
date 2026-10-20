@@ -1,57 +1,50 @@
 # Feature Intake -> Spec Checklist
 
-## 1. Summary
-- Añadir confirmación previa al envío de una transferencia, con un resumen breve y validación de sus datos.
-- Impacto objetivo: reducir en 20% las quejas por transferencias duplicadas dentro de un mes.
+## Summary
+Add a confirmation before a transfer is sent, show a concise summary, and validate transfer data. The target impact is a 20% reduction in duplicate-transfer complaints within one month.
 
-## 2. Scope
-- **Dentro del alcance:** confirmación antes del envío, mensaje resumen y validación de datos.
+## Scope
+- **Dentro del alcance:** confirmación previa al envío, resumen de la transferencia y validación de datos.
 - **Fuera del alcance:** cambios de infraestructura y rediseño completo de la interfaz.
 
-## 3. Supuestos
-- La solución se integra con el frontend web y la API REST existentes.
-- No se asume qué campos aparecen en el resumen ni cuáles son las reglas exactas de validación; están pendientes de confirmación.
+## Supuestos
+- Se integra con el frontend web y la REST API existentes, con logging estandarizado.
+- No se asume qué campos contiene el resumen, cuáles son las reglas de validación ni qué versión de API es propietaria del contrato; quedan pendientes de decisión.
 
-## 4. Decisiones técnicas por tomar (pendientes o resueltas)
-- **Pendiente:** definir qué versión de la API de transferencias es propietaria del contrato de confirmación.
-- **Pendiente:** acordar las reglas de validación de importes y otros datos de transferencia.
-- **Pendiente:** acordar el contenido del resumen y el evento de logging, evitando registrar valores sensibles.
+## Decisiones técnicas por tomar (pendientes o resueltas)
+- **Pendiente:** identificar la versión de API y el servicio propietario del contrato que usa el flujo de confirmación.
+- **Pendiente:** acordar las reglas de validación, incluidos los límites y casos inválidos de los importes.
+- **Pendiente:** definir los campos del resumen y el evento de logging, sin registrar valores sensibles.
+- **Pendiente:** definir baseline, fuente de datos y método de cálculo para medir la reducción de quejas.
 
-## 5. Riesgos y mitigaciones
-- **Exposición de datos sensibles en logs:** revisar los eventos afectados y verificar que no incluyan valores sensibles; acordar el esquema de logging antes de implementar.
-- **Errores en la validación del importe:** documentar las reglas con el responsable de producto y cubrir casos válidos e inválidos con pruebas antes de liberar.
+## Riesgos y mitigaciones
+- **Exposición de datos sensibles en logs:** definir qué datos están permitidos; revisar los eventos generados y adjuntar evidencia de que no contienen valores sensibles.
+- **Reglas de importe incorrectas:** acordar reglas con PO y responsables técnicos antes de implementar; cubrir límites, valores válidos e inválidos con pruebas.
+- **Métrica de impacto no verificable:** fijar baseline, fuente y periodo antes de liberar; comparar la misma fuente durante el mes posterior.
 
-## 6. Criterios de aceptación (medibles)
-- Al menos 95% de los intentos con datos válidos muestran la confirmación antes del envío.
-- Los datos inválidos bloquean el envío y muestran un mensaje de validación.
-- Las quejas por transferencias duplicadas disminuyen 20% dentro de un mes, comparadas con el baseline acordado.
-- Los eventos de confirmación no contienen valores sensibles.
+## Criterios de aceptación (medibles)
+- En el 100% de los casos válidos incluidos en la matriz de reglas aprobada, se presenta la confirmación antes de enviar la transferencia.
+- En el 100% de los casos inválidos incluidos en esa matriz, se bloquea el envío y se presenta un mensaje de validación.
+- Los eventos de confirmación revisados contienen cero valores sensibles.
+- Las quejas por transferencias duplicadas disminuyen al menos 20% durante un mes frente al baseline acordado.
 
-## 7. Plan de validación
-- **Pruebas unitarias:** verificar validación de datos válidos e inválidos y el bloqueo del envío ante errores.
-- **Pruebas funcionales:** recorrer el flujo web desde la captura de datos hasta confirmar o detener el envío; comprobar que aparece el resumen antes de enviar.
-- **Seguridad:** inspeccionar los eventos de logging generados y confirmar que no incluyen datos sensibles.
-- **Evidencia requerida:** resultados de pruebas, checklist de revisión de logs, documentación breve actualizada y PR revisado, conforme al DoD indicado.
+## Plan de validación
+- **Pruebas unitarias:** cubrir validaciones válidas e inválidas, que la confirmación preceda al envío y que cancelar/no confirmar no envíe la transferencia.
+- **Pruebas funcionales:** recorrer el flujo web desde la captura hasta confirmar o detener el envío; verificar el resumen aprobado y el mensaje de validación.
+- **Seguridad:** revisar los eventos de logging con datos de prueba y comprobar que no se registren valores sensibles; no usar datos reales.
+- **Evidencia requerida:** resultados de pruebas, matriz de validaciones aprobada, checklist/revisión de logs, baseline y comparación de la métrica, documentación breve actualizada y PR revisado conforme al DoD.
 
-## 8. Tareas sugeridas por rol
-- **Chapter/PO:** acordar baseline y método de medición; confirmar el objetivo de reducción; definir los campos del resumen.
-- **Tech Lead:**
-	- Identificar la versión API propietaria.
-	- Acordar el contrato entre frontend y servicios.
-	- Revisar el diseño de validación y logging.
-- **Backend:**
-	- Confirmar el contrato REST aplicable.
-	- Implementar o ajustar la validación acordada.
-	- Asegurar que los eventos no registren valores sensibles.
-- **Frontend:** implementar la confirmación previa al envío; presentar el resumen acordado; impedir el envío y mostrar errores de validación.
-- **QA:**
-	- Diseñar casos válidos e inválidos.
-	- Verificar la confirmación antes del envío.
-	- Recopilar resultados y evidencia de la validación de logs.
-- **Cyber:** revisar el riesgo de exposición en logs; definir comprobaciones mínimas de datos sensibles; revisar la evidencia de logging antes de aprobar.
+## Tareas sugeridas por rol
+- **Chapter/PO:** acordar baseline y fuente de medición; definir campos del resumen; aprobar reglas de validación y criterios de aceptación.
+- **Tech Lead:** identificar la versión API propietaria; acordar límites entre frontend y servicios existentes; revisar riesgos y estrategia de validación antes de implementar.
+- **Backend:** confirmar el contrato REST actual; determinar si las validaciones corresponden al servicio backend y documentar su comportamiento; asegurar que el logging estandarizado no incluya valores sensibles.
+- **Frontend:** implementar la confirmación antes del envío; mostrar solo los campos del resumen acordados; aplicar reglas acordadas y bloquear el envío ante datos inválidos.
+- **QA:** preparar casos de la matriz válida/inválida; verificar que no haya envío antes de confirmar; registrar resultados funcionales y evidencia de revisión de logs.
+- **Cyber:** identificar datos sensibles relevantes para logs; revisar el evento y sus campos permitidos; validar que la evidencia no contenga datos reales.
 
-## 9. Preguntas abiertas
-- ¿Qué baseline y fuente de datos se usarán para medir la reducción del 20%?
-- ¿Qué versión de la API define el contrato de confirmación?
-- ¿Qué campos debe incluir el resumen y cuáles son las reglas de validación del importe?
-- ¿Qué evento de logging se emitirá y qué datos están autorizados en él?
+## Preguntas abiertas
+- ¿Qué baseline, fuente de datos y definición de “queja por transferencia duplicada” se usarán para medir la reducción del 20%?
+- ¿Qué versión de la API y qué servicio son propietarios del contrato relacionado con el envío?
+- ¿Qué campos debe incluir el resumen y qué datos deben excluirse por sensibilidad?
+- ¿Cuáles son las reglas exactas de validación de importes y otros datos, incluidos límites y casos borde?
+- ¿Qué evento de logging se genera durante la confirmación y qué campos están autorizados?
