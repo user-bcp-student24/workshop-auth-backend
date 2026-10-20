@@ -1,14 +1,14 @@
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /workspace
 COPY pom.xml .
 COPY src ./src
 RUN mvn -B package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /work
 COPY --from=build /workspace/target/quarkus-app/lib/ /work/lib/
 COPY --from=build /workspace/target/quarkus-app/*.jar /work/
 COPY --from=build /workspace/target/quarkus-app/app/ /work/app/
 COPY --from=build /workspace/target/quarkus-app/quarkus/ /work/quarkus/
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/work/quarkus-run.jar"]
+ENTRYPOINT ["java", "--add-opens=java.base/java.lang=ALL-UNNAMED", "-jar", "/work/quarkus-run.jar"]
